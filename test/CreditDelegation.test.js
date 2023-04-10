@@ -16,10 +16,39 @@ describe("Aave credit delegation", () => {
   let balanceBefore;
 
   const testPairs = [];
-  // testPairs.push({ depositAsset: 'DAI', loanAsset: 'DAI', deposit: '50000', borrow: '35000', variable: false });
-  // testPairs.push({ depositAsset: 'DAI', loanAsset: 'DAI', deposit: '50000', borrow: '35000', variable: true });
-  // testPairs.push({ depositAsset: 'DAI', loanAsset: 'sUSD', deposit: '50000', borrow: '35000', variable: false });
-  // testPairs.push({ depositAsset: 'DAI', loanAsset: 'sUSD', deposit: '50000', borrow: '35000', variable: true });
+
+  // testPairs.push({
+  //   depositAsset: "DAI",
+  //   loanAsset: "DAI",
+  //   deposit: "50000",
+  //   borrow: "35000",
+  //   variable: false,
+  // });
+
+  // testPairs.push({
+  //   depositAsset: "DAI",
+  //   loanAsset: "DAI",
+  //   deposit: "50000",
+  //   borrow: "35000",
+  //   variable: true,
+  // });
+
+  // testPairs.push({
+  //   depositAsset: "DAI",
+  //   loanAsset: "sUSD",
+  //   deposit: "50000",
+  //   borrow: "35000",
+  //   variable: false,
+  // });
+
+  testPairs.push({
+    depositAsset: "DAI",
+    loanAsset: "sUSD",
+    deposit: "50000",
+    borrow: "35000",
+    variable: true,
+  });
+
   testPairs.push({
     depositAsset: "WETH",
     loanAsset: "DAI",
@@ -27,10 +56,38 @@ describe("Aave credit delegation", () => {
     borrow: "35000",
     variable: false,
   });
-  // testPairs.push({ depositAsset: 'WETH', loanAsset: 'sUSD', deposit: '100', borrow: '35000', variable: true });
-  // testPairs.push({ depositAsset: 'sUSD', loanAsset: 'sUSD', deposit: '50000', borrow: '35000', variable: false });
-  // testPairs.push({ depositAsset: 'sUSD', loanAsset: 'sUSD', deposit: '50000', borrow: '35000', variable: true });
-  // testPairs.push({ depositAsset: 'WETH', loanAsset: 'sUSD', deposit: '100', borrow: '35000', variable: true });
+
+  testPairs.push({
+    depositAsset: "WETH",
+    loanAsset: "sUSD",
+    deposit: "100",
+    borrow: "35000",
+    variable: true,
+  });
+
+  // testPairs.push({
+  //   depositAsset: "sUSD",
+  //   loanAsset: "sUSD",
+  //   deposit: "50000",
+  //   borrow: "35000",
+  //   variable: false,
+  // });
+
+  testPairs.push({
+    depositAsset: "sUSD",
+    loanAsset: "sUSD",
+    deposit: "50000",
+    borrow: "35000",
+    variable: true,
+  });
+
+  // testPairs.push({
+  //   depositAsset: "WETH",
+  //   loanAsset: "sUSD",
+  //   deposit: "100",
+  //   borrow: "35000",
+  //   variable: true,
+  // });
 
   before("connect to signers", async () => {
     [_, lender, borrower, someone] = await ethers.getSigners();
@@ -56,7 +113,8 @@ describe("Aave credit delegation", () => {
     );
   });
 
-  const itSuccesfullyDelegatesWith = ({
+  // Writing the test inside this function such that it can be tested with different input-parameters as pushed in testPairs array
+  const itSuccessfullyDelegatesWith = ({
     depositAsset,
     loanAsset,
     depositAmount,
@@ -69,10 +127,12 @@ describe("Aave credit delegation", () => {
 
     let snapshotId;
 
+    // Used to remember the state of blockchain at the time of starting the process
     before("take snapshot", async () => {
       snapshotId = await takeSnapshot();
     });
 
+    // Used to go back to the state of blockchain at which the snapshot was taken, after the process is complete
     after("restore snapshot", async () => {
       await restoreSnapshot(snapshotId);
     });
@@ -99,6 +159,7 @@ describe("Aave credit delegation", () => {
         );
       });
 
+      // check weather the given assets and related parameters are allowed by Aave or not, if not, skip the test for it.
       before(
         `validate that ${depositAsset} can be used as collateral and ${loanAsset} can be borrowed`,
         async function () {
@@ -287,7 +348,7 @@ describe("Aave credit delegation", () => {
               });
 
               describe("before the lender approves credit delegation", () => {
-                it("shows that the borrower doesnt have any delegated allowance", async () => {
+                it("shows that the borrower doesn't have any delegated allowance", async () => {
                   expect(
                     await debtToken.borrowAllowance(
                       lender.address,
@@ -560,7 +621,7 @@ describe("Aave credit delegation", () => {
   };
 
   testPairs.map(({ depositAsset, loanAsset, deposit, borrow, variable }) => {
-    itSuccesfullyDelegatesWith({
+    itSuccessfullyDelegatesWith({
       depositAsset,
       loanAsset,
       depositAmount: ethers.utils.parseEther(deposit),
